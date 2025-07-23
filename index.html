@@ -1298,6 +1298,24 @@ service cloud.firestore {<br>
     </div>
 
     <script>
+        // Firebase Configuration - Tu configuración específica
+        const firebaseConfig = {
+            apiKey: "AIzaSyBNzMiFYhu-MnMsjjV5xmy24y3QQLuXjxo",
+            authDomain: "qr-perlas.firebaseapp.com",
+            projectId: "qr-perlas",
+            storageBucket: "qr-perlas.firebasestorage.app",
+            messagingSenderId: "886866399172",
+            appId: "1:886866399172:web:75b8d0abdb15786fbd9e91",
+            measurementId: "G-MG943W01JG"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        console.log('🔥 Firebase inicializado correctamente');
+
         // Variables globales
         let currentUser = null;
         let currentUserType = null; // 'municipal' or 'super'
@@ -1339,7 +1357,14 @@ service cloud.firestore {<br>
                 const checkFirebase = () => {
                     if (typeof firebase !== 'undefined' && firebase.firestore && db) {
                         console.log('✅ Firebase conectado correctamente');
-                        resolve();
+                        // Autenticación anónima para poder escribir
+                        auth.signInAnonymously().then(() => {
+                            console.log('✅ Autenticación anónima exitosa');
+                            resolve();
+                        }).catch((error) => {
+                            console.error('❌ Error en autenticación anónima:', error);
+                            resolve(); // Continuar aunque falle la auth
+                        });
                     } else if (attempts < maxAttempts) {
                         attempts++;
                         setTimeout(checkFirebase, 200);
