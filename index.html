@@ -938,7 +938,38 @@
                     <h4 style="color: #e74c3c; margin-bottom: 1rem;">🔧 SUPER ADMINISTRADOR - Instrucciones</h4>
                     
                     <div style="background: #fff5f5; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; border-left: 4px solid #e74c3c;">
-                        <h5 style="color: #e74c3c; margin-bottom: 1rem;">🔐 Cambiar Credenciales de Super Admin</h5>
+                        <h5 style="color: #e74c3c; margin-bottom: 1rem;">🔥 Configurar Firebase Firestore</h5>
+                        <p style="margin-bottom: 1rem;"><strong>⚠️ IMPORTANTE:</strong> Para que funcione para el público general, configura Firebase Firestore.</p>
+                        <p style="margin-bottom: 1rem;"><strong>📝 Pasos:</strong></p>
+                        <ol style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                            <li>Ve a Firebase Console → tu proyecto</li>
+                            <li>Clic en "Firestore Database" → "Create database"</li>
+                            <li>Selecciona "Start in test mode"</li>
+                            <li>Ubicación: us-central (o más cercana)</li>
+                            <li>En "Rules", pega este código:</li>
+                        </ol>
+                        <div style="background: #2d3748; color: #e2e8f0; padding: 1rem; border-radius: 5px; font-family: monospace; font-size: 0.8rem; margin-bottom: 1rem;">
+rules_version = '2';<br>
+service cloud.firestore {<br>
+&nbsp;&nbsp;match /databases/{database}/documents {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;match /events/{document} {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allow read: if true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allow write: if request.auth != null;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;match /usuarios_autorizados/{document} {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allow read: if true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allow write: if request.auth != null;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;}<br>
+}
+                        </div>
+                        <p style="background: #fef5e7; padding: 0.5rem; border-radius: 5px; font-size: 0.9rem;">
+                            💡 <strong>Resultado:</strong> Los eventos serán visibles para todos desde cualquier dispositivo.
+                        </p>
+                    </div>
+
+                    <div style="background: #f0fff4; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; border-left: 4px solid #48bb78;">
+                        <h5 style="color: #2f855a; margin-bottom: 1rem;">🔐 Cambiar Credenciales de Super Admin</h5>
                         <p style="margin-bottom: 1rem;"><strong>⚠️ IMPORTANTE:</strong> Para mayor seguridad, cambia las credenciales por defecto.</p>
                         <p style="margin-bottom: 1rem;"><strong>📝 Cómo hacerlo:</strong></p>
                         <ol style="margin-left: 1.5rem; margin-bottom: 1rem;">
@@ -1286,11 +1317,87 @@
         // Inicializar aplicación
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🌊 Perlas del Conchos - Sistema iniciado');
-            loadData();
-            renderCalendar();
-            setDefaultDate();
-            optimizeForMobile();
+            
+            // Esperar a que Firebase esté listo
+            waitForFirebase().then(() => {
+                loadData(); // Cargar desde Firestore
+                setDefaultDate();
+                optimizeForMobile();
+                setupRealtimeUpdates(); // Configurar actualizaciones en tiempo real
+            }).catch(error => {
+                console.error('❌ Error inicializando Firebase:', error);
+                showMessage('❌ Error conectando con la base de datos. Revisa tu conexión.', 'error');
+            });
         });
+
+        // Esperar a que Firebase esté disponible
+        function waitForFirebase() {
+            return new Promise((resolve, reject) => {
+                let attempts = 0;
+                const maxAttempts = 30;
+                
+                const checkFirebase = () => {
+                    if (typeof firebase !== 'undefined' && firebase.firestore && db) {
+                        console.log('✅ Firebase conectado correctamente');
+                        resolve();
+                    } else if (attempts < maxAttempts) {
+                        attempts++;
+                        setTimeout(checkFirebase, 200);
+                    } else {
+                        reject(new Error('Firebase no se pudo inicializar'));
+                    }
+                };
+                
+                checkFirebase();
+            });
+        }
+
+        // Configurar actualizaciones en tiempo real
+        function setupRealtimeUpdates() {
+            // Escuchar cambios en eventos en tiempo real
+            db.collection('events').onSnapshot((snapshot) => {
+                console.log('🔄 Actualizando eventos en tiempo real...');
+                events = [];
+                snapshot.forEach((doc) => {
+                    events.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Ordenar eventos por fecha
+                events.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                // Actualizar interfaz automáticamente
+                renderCalendar();
+                
+                // Si estamos en la vista de eventos del usuario, actualizarla también
+                if (currentUser && document.getElementById('eventList').style.display !== 'none') {
+                    renderUserEvents();
+                }
+                
+                console.log(`🔄 ${events.length} eventos sincronizados en tiempo real`);
+            }, (error) => {
+                console.error('❌ Error en sincronización en tiempo real:', error);
+            });
+
+            // Escuchar cambios en usuarios autorizados en tiempo real  
+            db.collection('usuarios_autorizados').onSnapshot((snapshot) => {
+                console.log('🔄 Actualizando usuarios en tiempo real...');
+                const newUsers = {};
+                snapshot.forEach((doc) => {
+                    newUsers[doc.id] = doc.data();
+                });
+                
+                users = newUsers;
+                
+                // Si estamos en la vista de gestión de usuarios, actualizarla
+                if (currentUserType === 'super' && document.getElementById('userManagement').style.display !== 'none') {
+                    renderUserList();
+                }
+                
+                console.log(`🔄 ${Object.keys(users).length} usuarios sincronizados en tiempo real`);
+            }, (error) => {
+                console.error('❌ Error en sincronización de usuarios:', error);
+            });
+        }
 
         // Optimizaciones para móvil
         function optimizeForMobile() {
@@ -1384,33 +1491,138 @@
             updateNavButtons('📖 Instrucciones');
         }
 
-        // Gestión de datos - Aquí se guardan todos los eventos y usuarios
+        // Gestión de datos - Ahora usa Firebase Firestore (base de datos compartida)
         function loadData() {
-            // Cargar eventos y usuarios desde el almacenamiento local del navegador
-            const savedEvents = localStorage.getItem('perlasEvents');
-            const savedUsers = localStorage.getItem('perlasUsers');
-            
-            events = savedEvents ? JSON.parse(savedEvents) : [];
-            
-            // Si no hay usuarios, crear el usuario por defecto de Delicias
-            users = savedUsers ? JSON.parse(savedUsers) : {
-                'delicias': {
+            // Ya no usar localStorage - todo viene de Firebase
+            console.log('📊 Cargando datos desde Firebase Firestore...');
+            loadEvents();
+            loadAuthorizedUsers();
+        }
+
+        // Cargar eventos desde Firestore
+        async function loadEvents() {
+            try {
+                console.log('📅 Cargando eventos desde Firestore...');
+                const eventsSnapshot = await db.collection('events').orderBy('date', 'desc').get();
+                events = [];
+                eventsSnapshot.forEach((doc) => {
+                    events.push({ id: doc.id, ...doc.data() });
+                });
+                console.log(`✅ ${events.length} eventos cargados desde Firestore`);
+                renderCalendar(); // Actualizar calendario automáticamente
+            } catch (error) {
+                console.error('❌ Error cargando eventos:', error);
+                events = []; // Array vacío si hay error
+            }
+        }
+
+        // Cargar usuarios autorizados desde Firestore
+        async function loadAuthorizedUsers() {
+            try {
+                console.log('👥 Cargando usuarios autorizados desde Firestore...');
+                const usersSnapshot = await db.collection('usuarios_autorizados').get();
+                users = {};
+                usersSnapshot.forEach((doc) => {
+                    users[doc.id] = doc.data();
+                });
+                
+                // Si no hay usuarios, crear usuario por defecto
+                if (Object.keys(users).length === 0) {
+                    console.log('🔧 Creando usuario por defecto...');
+                    await createDefaultUser();
+                }
+                
+                console.log(`✅ ${Object.keys(users).length} usuarios autorizados cargados desde Firestore`);
+            } catch (error) {
+                console.error('❌ Error cargando usuarios:', error);
+                // Crear usuario por defecto si hay error
+                await createDefaultUser();
+            }
+        }
+
+        // Crear usuario por defecto en Firestore
+        async function createDefaultUser() {
+            try {
+                const defaultUser = {
                     password: '123',
                     municipality: 'Delicias',
                     displayName: 'Administrador Delicias',
                     active: true,
                     created: new Date().toISOString()
-                }
-            };
-            
-            console.log(`📊 Datos cargados: ${events.length} eventos, ${Object.keys(users).length} usuarios`);
+                };
+                
+                await db.collection('usuarios_autorizados').doc('delicias').set(defaultUser);
+                users['delicias'] = defaultUser;
+                console.log('✅ Usuario por defecto creado en Firestore');
+            } catch (error) {
+                console.error('❌ Error creando usuario por defecto:', error);
+                // Fallback local si no puede crear en Firestore
+                users = {
+                    'delicias': {
+                        password: '123',
+                        municipality: 'Delicias',
+                        displayName: 'Administrador Delicias',
+                        active: true,
+                        created: new Date().toISOString()
+                    }
+                };
+            }
         }
 
-        function saveData() {
-            // Guardar todos los datos en el navegador (persiste entre sesiones)
-            localStorage.setItem('perlasEvents', JSON.stringify(events));
-            localStorage.setItem('perlasUsers', JSON.stringify(users));
-            console.log('💾 Datos guardados exitosamente');
+        // Guardar evento en Firestore
+        async function saveEventToFirestore(eventData) {
+            try {
+                if (eventData.id && eventData.id !== Date.now()) {
+                    // Actualizar evento existente
+                    await db.collection('events').doc(eventData.id.toString()).set(eventData);
+                    console.log('✅ Evento actualizado en Firestore');
+                } else {
+                    // Crear nuevo evento
+                    const docRef = await db.collection('events').add(eventData);
+                    eventData.id = docRef.id;
+                    console.log('✅ Evento creado en Firestore con ID:', docRef.id);
+                }
+                return true;
+            } catch (error) {
+                console.error('❌ Error guardando evento en Firestore:', error);
+                return false;
+            }
+        }
+
+        // Eliminar evento de Firestore
+        async function deleteEventFromFirestore(eventId) {
+            try {
+                await db.collection('events').doc(eventId.toString()).delete();
+                console.log('✅ Evento eliminado de Firestore');
+                return true;
+            } catch (error) {
+                console.error('❌ Error eliminando evento de Firestore:', error);
+                return false;
+            }
+        }
+
+        // Guardar usuario en Firestore
+        async function saveUserToFirestore(username, userData) {
+            try {
+                await db.collection('usuarios_autorizados').doc(username).set(userData);
+                console.log('✅ Usuario guardado en Firestore');
+                return true;
+            } catch (error) {
+                console.error('❌ Error guardando usuario en Firestore:', error);
+                return false;
+            }
+        }
+
+        // Eliminar usuario de Firestore
+        async function deleteUserFromFirestore(username) {
+            try {
+                await db.collection('usuarios_autorizados').doc(username).delete();
+                console.log('✅ Usuario eliminado de Firestore');
+                return true;
+            } catch (error) {
+                console.error('❌ Error eliminando usuario de Firestore:', error);
+                return false;
+            }
         }
 
         function setDefaultDate() {
@@ -1601,7 +1813,7 @@
             }
 
             // Crear el nuevo usuario
-            users[username] = {
+            const userData = {
                 password: password,
                 municipality: municipality,
                 displayName: displayName,
@@ -1609,35 +1821,62 @@
                 created: new Date().toISOString()
             };
 
-            // Guardar cambios
-            saveData();
-            showMessage(`✅ ¡Éxito! Usuario "${username}" creado correctamente. Ya puede hacer login.`, 'success', 'messages');
-            
-            // Limpiar formulario y actualizar lista
-            document.querySelector('#userManagement form').reset();
-            renderUserList();
+            // Guardar en Firestore
+            saveUserToFirestore(username, userData).then(success => {
+                if (success) {
+                    users[username] = userData;
+                    showMessage(`✅ ¡Éxito! Usuario "${username}" creado correctamente. Ya puede hacer login.`, 'success', 'messages');
+                    
+                    // Limpiar formulario y actualizar lista
+                    document.querySelector('#userManagement form').reset();
+                    renderUserList();
+                } else {
+                    showMessage('❌ Error guardando usuario. Intenta de nuevo.', 'error', 'messages');
+                }
+            });
         }
 
         function toggleUser(username) {
             if (users[username]) {
                 users[username].active = !users[username].active;
-                saveData();
-                showMessage(`✅ Usuario "${username}" ${users[username].active ? 'activado' : 'desactivado'}`, 'success', 'messages');
-                renderUserList();
+                
+                // Guardar cambios en Firestore
+                saveUserToFirestore(username, users[username]).then(success => {
+                    if (success) {
+                        showMessage(`✅ Usuario "${username}" ${users[username].active ? 'activado' : 'desactivado'}`, 'success', 'messages');
+                        renderUserList();
+                    } else {
+                        // Revertir cambio si falla
+                        users[username].active = !users[username].active;
+                        showMessage('❌ Error actualizando usuario', 'error', 'messages');
+                    }
+                });
             }
         }
 
         function deleteUser(username) {
             if (confirm(`¿Estás seguro de eliminar al usuario "${username}"?`)) {
-                delete users[username];
-                
-                // Also delete events from this user
-                events = events.filter(event => event.createdBy !== username);
-                
-                saveData();
-                showMessage(`✅ Usuario "${username}" eliminado`, 'success', 'messages');
-                renderUserList();
-                renderCalendar();
+                // Eliminar de Firestore
+                deleteUserFromFirestore(username).then(success => {
+                    if (success) {
+                        delete users[username];
+                        
+                        // También eliminar eventos de este usuario
+                        const userEvents = events.filter(event => event.createdBy === username);
+                        const deletePromises = userEvents.map(event => deleteEventFromFirestore(event.id));
+                        
+                        Promise.all(deletePromises).then(() => {
+                            // Actualizar array local de eventos
+                            events = events.filter(event => event.createdBy !== username);
+                            
+                            showMessage(`✅ Usuario "${username}" eliminado`, 'success', 'messages');
+                            renderUserList();
+                            renderCalendar();
+                        });
+                    } else {
+                        showMessage('❌ Error eliminando usuario', 'error', 'messages');
+                    }
+                });
             }
         }
 
@@ -1770,28 +2009,36 @@
                 description: document.getElementById('description').value.trim(),
                 municipality: users[currentUser].municipality,
                 createdBy: currentUser,
-                created: editingEventId ? events.find(e => e.id === editingEventId).created : new Date().toISOString(),
+                created: editingEventId ? events.find(e => e.id === editingEventId)?.created || new Date().toISOString() : new Date().toISOString(),
                 updated: new Date().toISOString()
             };
 
-            // Decidir si es crear nuevo o actualizar existente
-            if (editingEventId) {
-                // Actualizar evento existente
-                const index = events.findIndex(e => e.id === editingEventId);
-                events[index] = eventData;
-                showMessage('✅ ¡Perfecto! Evento actualizado correctamente. Ya está visible en el calendario.', 'success', 'adminMessages');
-            } else {
-                // Crear nuevo evento
-                events.push(eventData);
-                showMessage('✅ ¡Excelente! Evento creado correctamente. Ya está visible en el calendario público.', 'success', 'adminMessages');
-            }
+            // Guardar en Firestore
+            saveEventToFirestore(eventData).then(success => {
+                if (success) {
+                    // Actualizar array local
+                    if (editingEventId) {
+                        // Actualizar evento existente
+                        const index = events.findIndex(e => e.id === editingEventId);
+                        if (index !== -1) {
+                            events[index] = eventData;
+                        }
+                        showMessage('✅ ¡Perfecto! Evento actualizado correctamente. Ya está visible en el calendario.', 'success', 'adminMessages');
+                    } else {
+                        // Crear nuevo evento
+                        events.push(eventData);
+                        showMessage('✅ ¡Excelente! Evento creado correctamente. Ya está visible en el calendario público.', 'success', 'adminMessages');
+                    }
 
-            // Guardar cambios y actualizar interface
-            saveData();
-            document.querySelector('#addForm form').reset();
-            setDefaultDate(); // Volver a poner la fecha de hoy por defecto
-            renderCalendar(); // Actualizar el calendario
-            editingEventId = null; // Limpiar modo edición
+                    // Limpiar formulario y actualizar interface
+                    document.querySelector('#addForm form').reset();
+                    setDefaultDate(); // Volver a poner la fecha de hoy por defecto
+                    renderCalendar(); // Actualizar el calendario
+                    editingEventId = null; // Limpiar modo edición
+                } else {
+                    showMessage('❌ Error guardando evento. Revisa tu conexión e intenta de nuevo.', 'error', 'adminMessages');
+                }
+            });
         }
 
         function editEvent(id) {
@@ -1815,11 +2062,18 @@
 
         function deleteEvent(id) {
             if (confirm('¿Estás seguro de eliminar este evento?')) {
-                events = events.filter(e => e.id !== id);
-                saveData();
-                showMessage('✅ Evento eliminado', 'success', 'adminMessages');
-                renderUserEvents();
-                renderCalendar();
+                // Eliminar de Firestore
+                deleteEventFromFirestore(id).then(success => {
+                    if (success) {
+                        // Actualizar array local
+                        events = events.filter(e => e.id !== id);
+                        showMessage('✅ Evento eliminado', 'success', 'adminMessages');
+                        renderUserEvents();
+                        renderCalendar();
+                    } else {
+                        showMessage('❌ Error eliminando evento', 'error', 'adminMessages');
+                    }
+                });
             }
         }
 
@@ -2059,13 +2313,14 @@
             document.getElementById('eventModal').style.display = 'none';
         }
 
-        // Data Import/Export
+        // Data Import/Export - Ahora trabaja con Firestore
         function exportData() {
             const data = {
                 events: events,
                 users: users,
                 exported: new Date().toISOString(),
-                version: '1.0'
+                version: '2.0',
+                source: 'Firebase Firestore'
             };
             
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -2081,28 +2336,50 @@
             showMessage('✅ Respaldo descargado exitosamente', 'success', 'messages');
         }
 
-        function importData(event) {
+        async function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
             
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
                     
                     if (data.events && data.users) {
-                        if (confirm('⚠️ ¿Estás seguro? Esto reemplazará todos los datos actuales.')) {
-                            events = data.events;
-                            users = data.users;
-                            saveData();
+                        if (confirm('⚠️ ¿Estás seguro? Esto reemplazará todos los datos actuales en Firebase.')) {
+                            showMessage('🔄 Importando datos a Firebase...', 'info', 'messages');
+                            
+                            // Eliminar todos los eventos existentes
+                            const deleteEventPromises = events.map(event => deleteEventFromFirestore(event.id));
+                            await Promise.all(deleteEventPromises);
+                            
+                            // Eliminar todos los usuarios existentes
+                            const deleteUserPromises = Object.keys(users).map(username => deleteUserFromFirestore(username));
+                            await Promise.all(deleteUserPromises);
+                            
+                            // Agregar nuevos eventos
+                            const addEventPromises = data.events.map(event => saveEventToFirestore(event));
+                            await Promise.all(addEventPromises);
+                            
+                            // Agregar nuevos usuarios
+                            const addUserPromises = Object.entries(data.users).map(([username, userData]) => 
+                                saveUserToFirestore(username, userData)
+                            );
+                            await Promise.all(addUserPromises);
+                            
+                            // Recargar datos desde Firebase
+                            await loadEvents();
+                            await loadAuthorizedUsers();
+                            
                             renderCalendar();
                             renderUserList();
-                            showMessage('✅ Datos importados exitosamente', 'success', 'messages');
+                            showMessage('✅ Datos importados exitosamente desde respaldo', 'success', 'messages');
                         }
                     } else {
                         showMessage('❌ Archivo de respaldo inválido', 'error', 'messages');
                     }
                 } catch (error) {
+                    console.error('Error importando:', error);
                     showMessage('❌ Error al leer el archivo: ' + error.message, 'error', 'messages');
                 }
             };
@@ -2193,10 +2470,16 @@
             });
         }
 
-        // 🌊 PERLAS DEL CONCHOS - SISTEMA COMPLETAMENTE CARGADO
-        // Este sistema permite a los municipios gestionar eventos públicos
+        // 🌊 PERLAS DEL CONCHOS - SISTEMA COMPLETAMENTE CARGADO CON FIREBASE FIRESTORE
+        // Este sistema permite a los municipios gestionar eventos públicos usando Firebase como base de datos
+        // CARACTERÍSTICAS:
+        // - Base de datos compartida (Firebase Firestore)
+        // - Sincronización en tiempo real entre todos los dispositivos
+        // - Eventos visibles inmediatamente para todo el público
+        // - Sistema de respaldo y restauración
+        // - Optimizado para móviles y computadoras
         // Para soporte técnico, consulta la documentación o contacta al desarrollador
-        console.log('🌊 Perlas del Conchos - Sistema completamente cargado y listo para usar');
+        console.log('🌊 Perlas del Conchos - Sistema completamente cargado con Firebase Firestore');
     </script>
 </body>
 </html>
