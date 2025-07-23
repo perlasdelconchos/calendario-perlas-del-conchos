@@ -570,10 +570,11 @@
             <div class="admin-buttons" id="adminButtons" style="display: none;">
                 <button class="admin-btn" onclick="showLogin()">👤 Admin Municipal</button>
                 <button class="admin-btn super-admin-btn" onclick="showSuperAdminLogin()">⚙️ Super Admin</button>
+                <button class="admin-btn" onclick="showHelp()" style="background: #2d3748;">❓ Ayuda</button>
             </div>
             <!-- Show admin buttons only when accessed directly -->
             <div style="position: absolute; bottom: 10px; right: 10px;">
-                <button onclick="toggleAdminAccess()" style="background: transparent; border: none; color: #999; font-size: 0.8rem; cursor: pointer; opacity: 0.3;">⚙️</button>
+                <button onclick="toggleAdminAccess()" style="background: transparent; border: none; color: #999; font-size: 0.8rem; cursor: pointer; opacity: 0.3;" title="Acceso administrativo">⚙️</button>
             </div>
         </div>
 
@@ -588,6 +589,7 @@
                     <button onclick="showUserManagement()" class="active">👥 Usuarios</button>
                     <button onclick="showSystemStats()">📊 Estadísticas</button>
                     <button onclick="showBackup()">💾 Respaldo</button>
+                    <button onclick="showAdminInstructions()">📖 Instrucciones</button>
                     <button onclick="backToPublic()">🏠 Ver Calendario Público</button>
                     <button class="logout-btn" onclick="logout()">Salir</button>
                 </div>
@@ -603,6 +605,15 @@
                     <!-- Add User Form -->
                     <div class="form-section">
                         <h4 style="margin-bottom: 1rem;">➕ Agregar Nuevo Usuario</h4>
+                    <div style="background: #e6fffa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem;">
+                        <p><strong>💡 Instrucciones:</strong></p>
+                        <ul style="margin-left: 1rem; margin-top: 0.5rem;">
+                            <li><strong>Usuario:</strong> Solo letras minúsculas, sin espacios (ej: delicias, meoqui)</li>
+                            <li><strong>Contraseña:</strong> Mínimo 6 caracteres, combina letras y números</li>
+                            <li><strong>Municipio:</strong> Nombre oficial del municipio</li>
+                            <li><strong>Nombre Completo:</strong> Como aparecerá en el sistema</li>
+                        </ul>
+                    </div>
                         <form onsubmit="addUser(event)">
                             <div class="form-grid">
                                 <div class="form-group">
@@ -640,6 +651,79 @@
                 <div class="stats-grid" id="statsContainer"></div>
             </div>
 
+            <!-- Admin Instructions -->
+            <div id="adminInstructions" style="display: none;">
+                <h3 style="color: #764ba2; margin-bottom: 1.5rem;">📖 Instrucciones para Administradores</h3>
+                
+                <div class="form-section">
+                    <h4 style="color: #e74c3c; margin-bottom: 1rem;">🔧 SUPER ADMINISTRADOR - Instrucciones</h4>
+                    
+                    <div style="background: #fff5f5; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; border-left: 4px solid #e74c3c;">
+                        <h5 style="color: #e74c3c; margin-bottom: 1rem;">🔐 Cambiar Credenciales de Super Admin</h5>
+                        <p style="margin-bottom: 1rem;"><strong>⚠️ IMPORTANTE:</strong> Para mayor seguridad, cambia las credenciales por defecto.</p>
+                        <p style="margin-bottom: 1rem;"><strong>📝 Cómo hacerlo:</strong></p>
+                        <ol style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                            <li>Ve a GitHub → tu repositorio → archivo <code>index.html</code></li>
+                            <li>Busca la línea que dice: <code>username: 'admin', password: 'perlas2024!'</code></li>
+                            <li>Cambia 'admin' y 'perlas2024!' por tus nuevas credenciales</li>
+                            <li>Guarda los cambios</li>
+                        </ol>
+                        <p style="background: #fef5e7; padding: 0.5rem; border-radius: 5px; font-size: 0.9rem;">
+                            💡 <strong>Tip:</strong> Usa una contraseña segura con mayúsculas, números y símbolos.
+                        </p>
+                    </div>
+
+                    <div style="background: #f0fff4; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; border-left: 4px solid #48bb78;">
+                        <h5 style="color: #2f855a; margin-bottom: 1rem;">👥 Gestión de Usuarios Municipales</h5>
+                        
+                        <h6 style="color: #2d3748; margin-bottom: 0.5rem;">➕ Para agregar un nuevo municipio:</h6>
+                        <ol style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                            <li><strong>Usuario:</strong> Nombre del municipio en minúsculas (ej: delicias, meoqui)</li>
+                            <li><strong>Contraseña:</strong> Crea una contraseña segura</li>
+                            <li><strong>Municipio:</strong> Nombre completo con mayúscula (ej: Delicias)</li>
+                            <li><strong>Nombre Completo:</strong> Como aparecerá en el sistema (ej: Administrador Delicias)</li>
+                            <li>Haz clic en "➕ Agregar Usuario"</li>
+                        </ol>
+
+                        <h6 style="color: #2d3748; margin-bottom: 0.5rem;">🔧 Para gestionar usuarios existentes:</h6>
+                        <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                            <li><strong>🚫 Desactivar:</strong> El usuario no podrá hacer login pero conserva sus eventos</li>
+                            <li><strong>✅ Activar:</strong> Reactiva un usuario desactivado</li>
+                            <li><strong>🗑️ Eliminar:</strong> ⚠️ Borra el usuario Y todos sus eventos (no se puede deshacer)</li>
+                        </ul>
+                    </div>
+
+                    <div style="background: #edf2f7; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; border-left: 4px solid #4a5568;">
+                        <h5 style="color: #2d3748; margin-bottom: 1rem;">💾 Sistema de Respaldos</h5>
+                        
+                        <h6 style="color: #2d3748; margin-bottom: 0.5rem;">📥 Hacer Respaldo (Recomendado semanal):</h6>
+                        <ol style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                            <li>Ve a la sección "💾 Respaldo"</li>
+                            <li>Haz clic en "📥 Descargar Respaldo"</li>
+                            <li>Se descargará un archivo .json con todos los datos</li>
+                            <li>Guárdalo en un lugar seguro (Google Drive, OneDrive, etc.)</li>
+                        </ol>
+
+                        <h6 style="color: #2d3748; margin-bottom: 0.5rem;">📤 Restaurar Respaldo:</h6>
+                        <ol style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                            <li>Ve a la sección "💾 Respaldo"</li>
+                            <li>Haz clic en "📤 Importar Respaldo"</li>
+                            <li>Selecciona el archivo .json del respaldo</li>
+                            <li>⚠️ Esto reemplazará TODOS los datos actuales</li>
+                        </ol>
+                    </div>
+
+                    <div style="background: #e6fffa; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #319795;">
+                        <h5 style="color: #2c7a7b; margin-bottom: 1rem;">📊 Monitoreo del Sistema</h5>
+                        <ul style="margin-left: 1.5rem;">
+                            <li><strong>📊 Estadísticas:</strong> Revisa regularmente las estadísticas para ver el uso del sistema</li>
+                            <li><strong>👥 Usuarios Activos:</strong> Verifica que solo usuarios autorizados tengan acceso</li>
+                            <li><strong>📅 Eventos:</strong> Supervisa la calidad y cantidad de eventos publicados</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
             <!-- Backup -->
             <div id="backupSection" style="display: none;">
                 <h3 style="color: #764ba2; margin-bottom: 1.5rem;">💾 Respaldo y Restauración</h3>
@@ -672,7 +756,18 @@
             <!-- Add Event Form -->
             <div id="addForm">
                 <div class="form-section">
-                    <h3 style="color: #764ba2; margin-bottom: 1.5rem;">🎉 Nuevo Evento</h3>
+                    <h3 style="color: #764ba2; margin-bottom: 1rem;">🎉 Nuevo Evento</h3>
+                    
+                    <div style="background: #e6fffa; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                        <p><strong>💡 Consejos para un buen evento:</strong></p>
+                        <ul style="margin-left: 1rem; margin-top: 0.5rem;">
+                            <li><strong>Título:</strong> Sé específico y atractivo (ej: "Festival de la Nuez 2025")</li>
+                            <li><strong>Descripción:</strong> Incluye actividades, horarios especiales, y qué pueden esperar los asistentes</li>
+                            <li><strong>Ubicación:</strong> Dirección completa + referencias conocidas</li>
+                            <li><strong>Contacto:</strong> Número de WhatsApp o teléfono para consultas</li>
+                        </ul>
+                    </div>
+                    
                     <form onsubmit="saveEvent(event)">
                         <div class="form-grid">
                             <div class="form-group">
@@ -814,7 +909,77 @@
         </div>
     </div>
 
-    <!-- Event Detail Modal -->
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" onclick="closeHelp()">&times;</span>
+            <h2 style="color: #764ba2; text-align: center; margin-bottom: 2rem;">❓ Manual de Usuario - Perlas del Conchos</h2>
+            
+            <div style="background: #f8f9ff; padding: 2rem; border-radius: 15px; margin-bottom: 2rem;">
+                <h3 style="color: #764ba2; margin-bottom: 1rem;">🎯 ¿Qué es este sistema?</h3>
+                <p style="margin-bottom: 1rem;">Es un calendario digital donde los municipios de la región pueden publicar sus eventos públicos. Los ciudadanos pueden ver todos los eventos escaneando un código QR.</p>
+                
+                <h4 style="color: #667eea; margin-bottom: 0.5rem;">👥 Hay dos tipos de usuarios:</h4>
+                <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                    <li><strong>📋 Administradores Municipales:</strong> Pueden agregar, editar y eliminar eventos de su municipio</li>
+                    <li><strong>⚙️ Super Administrador:</strong> Puede gestionar usuarios y hacer respaldos del sistema</li>
+                </ul>
+            </div>
+
+            <div style="background: #e6fffa; padding: 2rem; border-radius: 15px; margin-bottom: 2rem;">
+                <h3 style="color: #2c7a7b; margin-bottom: 1rem;">👤 Para Administradores Municipales</h3>
+                
+                <h4 style="color: #2d3748; margin-bottom: 0.5rem;">🔐 Cómo acceder:</h4>
+                <ol style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                    <li>Haz clic en el ícono ⚙️ (esquina inferior derecha)</li>
+                    <li>Clic en "👤 Admin Municipal"</li>
+                    <li>Ingresa tu usuario y contraseña (proporcionados por el super admin)</li>
+                </ol>
+
+                <h4 style="color: #2d3748; margin-bottom: 0.5rem;">➕ Cómo agregar un evento:</h4>
+                <ol style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                    <li>Una vez logueado, estás en "➕ Agregar" automáticamente</li>
+                    <li>Llena TODOS los campos obligatorios (*)</li>
+                    <li>Haz clic en "💾 Guardar Evento"</li>
+                    <li>El evento aparecerá inmediatamente en el calendario público</li>
+                </ol>
+
+                <h4 style="color: #2d3748; margin-bottom: 0.5rem;">📋 Cómo gestionar eventos existentes:</h4>
+                <ol style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                    <li>Clic en "📋 Mis Eventos"</li>
+                    <li>Usa los filtros: "📅 Todos", "⏭️ Próximos", "⏮️ Pasados"</li>
+                    <li>Para editar: Clic en "✏️ Editar" → Modifica → "💾 Guardar"</li>
+                    <li>Para eliminar: Clic en "🗑️ Eliminar" → Confirmar</li>
+                </ol>
+
+                <h4 style="color: #2d3748; margin-bottom: 0.5rem;">🔍 Consejos para eventos exitosos:</h4>
+                <ul style="margin-left: 1.5rem;">
+                    <li><strong>Título:</strong> Que sea atractivo y descriptivo</li>
+                    <li><strong>Descripción:</strong> Incluye todas las actividades y detalles importantes</li>
+                    <li><strong>Ubicación:</strong> Dirección completa y referencias conocidas</li>
+                    <li><strong>Contacto:</strong> Teléfono o email para consultas</li>
+                    <li><strong>Tipo:</strong> Selecciona la categoría correcta para que aparezca en filtros</li>
+                </ul>
+            </div>
+
+            <div style="background: #fff5f5; padding: 2rem; border-radius: 15px;">
+                <h3 style="color: #e74c3c; margin-bottom: 1rem;">⚙️ Para Super Administrador</h3>
+                
+                <h4 style="color: #2d3748; margin-bottom: 0.5rem;">🔐 Responsabilidades principales:</h4>
+                <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                    <li><strong>👥 Gestión de Usuarios:</strong> Crear cuentas para nuevos municipios</li>
+                    <li><strong>💾 Respaldos:</strong> Hacer respaldos semanales del sistema</li>
+                    <li><strong>📊 Monitoreo:</strong> Revisar estadísticas y uso del sistema</li>
+                    <li><strong>🔒 Seguridad:</strong> Cambiar credenciales por defecto</li>
+                </ul>
+
+                <h4 style="color: #2d3748; margin-bottom: 0.5rem;">📞 Contacto y Soporte:</h4>
+                <p style="background: #f7fafc; padding: 1rem; border-radius: 8px; font-style: italic;">
+                    Para soporte técnico o preguntas sobre el sistema, contacta al desarrollador o consulta la documentación en GitHub.
+                </p>
+            </div>
+        </div>
+    </div>
     <div id="eventModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeEventModal()">&times;</span>
@@ -832,10 +997,11 @@
         let currentFilter = 'all';
         let editingEventId = null;
 
-        // Super admin credentials (cambiar estas credenciales por seguridad)
+        // Super admin credentials (CAMBIAR ESTAS CREDENCIALES POR SEGURIDAD)
+        // Para cambiar: busca esta sección en el código y modifica username y password
         const SUPER_ADMIN = {
-            username: 'admin',
-            password: 'perlas2024!'
+            username: 'admin',           // ← Cambiar por tu usuario preferido
+            password: 'perlas2024!'      // ← Cambiar por una contraseña segura
         };
 
         // Inicializar aplicación
@@ -846,12 +1012,32 @@
             setDefaultDate();
         });
 
-        // Gestión de datos
+        // Help and Instructions
+        function showHelp() {
+            document.getElementById('helpModal').style.display = 'block';
+        }
+
+        function closeHelp() {
+            document.getElementById('helpModal').style.display = 'none';
+        }
+
+        function showAdminInstructions() {
+            document.getElementById('userManagement').style.display = 'none';
+            document.getElementById('systemStats').style.display = 'none';
+            document.getElementById('backupSection').style.display = 'none';
+            document.getElementById('adminInstructions').style.display = 'block';
+            updateNavButtons('📖 Instrucciones');
+        }
+
+        // Gestión de datos - Aquí se guardan todos los eventos y usuarios
         function loadData() {
+            // Cargar eventos y usuarios desde el almacenamiento local del navegador
             const savedEvents = localStorage.getItem('perlasEvents');
             const savedUsers = localStorage.getItem('perlasUsers');
             
             events = savedEvents ? JSON.parse(savedEvents) : [];
+            
+            // Si no hay usuarios, crear el usuario por defecto de Delicias
             users = savedUsers ? JSON.parse(savedUsers) : {
                 'delicias': {
                     password: '123',
@@ -866,6 +1052,7 @@
         }
 
         function saveData() {
+            // Guardar todos los datos en el navegador (persiste entre sesiones)
             localStorage.setItem('perlasEvents', JSON.stringify(events));
             localStorage.setItem('perlasUsers', JSON.stringify(users));
             console.log('💾 Datos guardados exitosamente');
@@ -1023,16 +1210,30 @@
         function addUser(event) {
             event.preventDefault();
             
+            // Obtener datos del formulario y limpiarlos
             const username = document.getElementById('newUsername').value.trim().toLowerCase();
             const password = document.getElementById('newPassword').value;
             const municipality = document.getElementById('newMunicipality').value.trim();
             const displayName = document.getElementById('newDisplayName').value.trim();
 
+            // Validar que el usuario no exista ya
             if (users[username]) {
-                showMessage('❌ El usuario ya existe', 'error', 'messages');
+                showMessage('❌ Error: El usuario ya existe. Usa otro nombre de usuario.', 'error', 'messages');
                 return;
             }
 
+            // Validaciones básicas
+            if (username.length < 3) {
+                showMessage('❌ Error: El usuario debe tener al menos 3 caracteres.', 'error', 'messages');
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage('❌ Error: La contraseña debe tener al menos 6 caracteres.', 'error', 'messages');
+                return;
+            }
+
+            // Crear el nuevo usuario
             users[username] = {
                 password: password,
                 municipality: municipality,
@@ -1041,8 +1242,11 @@
                 created: new Date().toISOString()
             };
 
+            // Guardar cambios
             saveData();
-            showMessage(`✅ Usuario "${username}" creado exitosamente`, 'success', 'messages');
+            showMessage(`✅ ¡Éxito! Usuario "${username}" creado correctamente. Ya puede hacer login.`, 'success', 'messages');
+            
+            // Limpiar formulario y actualizar lista
             document.querySelector('#userManagement form').reset();
             renderUserList();
         }
@@ -1179,13 +1383,15 @@
         function saveEvent(event) {
             event.preventDefault();
             
+            // Verificar que el usuario esté logueado como administrador municipal
             if (!currentUser || currentUserType !== 'municipal') {
-                showMessage('❌ Debe estar logueado como administrador municipal', 'error', 'adminMessages');
+                showMessage('❌ Error: Debe estar logueado como administrador municipal para agregar eventos', 'error', 'adminMessages');
                 return;
             }
 
+            // Recopilar todos los datos del formulario
             const eventData = {
-                id: editingEventId || Date.now(),
+                id: editingEventId || Date.now(), // Si está editando, mantener ID; si no, crear nuevo
                 title: document.getElementById('title').value.trim(),
                 date: document.getElementById('date').value,
                 time: document.getElementById('time').value,
@@ -1201,20 +1407,24 @@
                 updated: new Date().toISOString()
             };
 
+            // Decidir si es crear nuevo o actualizar existente
             if (editingEventId) {
+                // Actualizar evento existente
                 const index = events.findIndex(e => e.id === editingEventId);
                 events[index] = eventData;
-                showMessage('✅ Evento actualizado correctamente', 'success', 'adminMessages');
+                showMessage('✅ ¡Perfecto! Evento actualizado correctamente. Ya está visible en el calendario.', 'success', 'adminMessages');
             } else {
+                // Crear nuevo evento
                 events.push(eventData);
-                showMessage('✅ Evento creado correctamente', 'success', 'adminMessages');
+                showMessage('✅ ¡Excelente! Evento creado correctamente. Ya está visible en el calendario público.', 'success', 'adminMessages');
             }
 
+            // Guardar cambios y actualizar interface
             saveData();
             document.querySelector('#addForm form').reset();
-            setDefaultDate();
-            renderCalendar();
-            editingEventId = null;
+            setDefaultDate(); // Volver a poner la fecha de hoy por defecto
+            renderCalendar(); // Actualizar el calendario
+            editingEventId = null; // Limpiar modo edición
         }
 
         function editEvent(id) {
@@ -1597,7 +1807,7 @@
 
         // Close modals when clicking outside
         window.onclick = function(event) {
-            const modals = ['loginModal', 'superAdminLoginModal', 'eventModal'];
+            const modals = ['loginModal', 'superAdminLoginModal', 'eventModal', 'helpModal'];
             modals.forEach(modalId => {
                 const modal = document.getElementById(modalId);
                 if (event.target === modal) {
@@ -1606,7 +1816,10 @@
             });
         }
 
-        console.log('🌊 Perlas del Conchos - Sistema completamente cargado');
+        // 🌊 PERLAS DEL CONCHOS - SISTEMA COMPLETAMENTE CARGADO
+        // Este sistema permite a los municipios gestionar eventos públicos
+        // Para soporte técnico, consulta la documentación o contacta al desarrollador
+        console.log('🌊 Perlas del Conchos - Sistema completamente cargado y listo para usar');
     </script>
 </body>
 </html>
