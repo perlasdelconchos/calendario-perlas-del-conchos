@@ -16,11 +16,38 @@
     </header>
 
     <main class="container">
+        <!-- Sección de Login -->
+        <section id="login-section" class="login-section">
+            <h3>Área de Administración</h3>
+            <div id="login-container">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="username">Usuario:</label>
+                        <input type="text" id="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Contraseña:</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <button type="submit" class="primary-button">Iniciar Sesión</button>
+                </form>
+            </div>
+            <div id="user-logged-in" style="display: none;">
+                <p>Has iniciado sesión como: <span id="logged-user">Usuario</span></p>
+                <p>Municipio: <span id="logged-municipality">Municipio</span></p>
+                <div class="button-group">
+                    <button id="add-event-button" class="primary-button">Añadir Nuevo Evento</button>
+                    <button id="logout-button" class="secondary-button">Cerrar Sesión</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calendario -->
         <section class="calendar-section">
             <div class="calendar-header">
-                <button id="prev-month">&#8592; Anterior</button>
+                <button id="prev-month" class="calendar-button">← Anterior</button>
                 <h2 id="current-month">Mes Año</h2>
-                <button id="next-month">Siguiente &#8594;</button>
+                <button id="next-month" class="calendar-button">Siguiente →</button>
             </div>
             
             <div class="calendar" id="calendar">
@@ -37,6 +64,7 @@
             </div>
         </section>
         
+        <!-- Filtros -->
         <section class="filters-section">
             <h3>Filtrar Eventos</h3>
             <div class="filter-controls">
@@ -64,10 +92,11 @@
                     </select>
                 </div>
                 
-                <button id="apply-filters">Aplicar Filtros</button>
+                <button id="apply-filters" class="primary-button">Aplicar Filtros</button>
             </div>
         </section>
         
+        <!-- Eventos del día seleccionado -->
         <section class="events-section">
             <h3>Eventos del Día: <span id="selected-date">Selecciona un día</span></h3>
             <div id="events-list" class="events-list">
@@ -75,6 +104,7 @@
             </div>
         </section>
         
+        <!-- Próximos eventos -->
         <section class="upcoming-events">
             <h3>Próximos Eventos</h3>
             <div id="upcoming-events-list" class="events-list">
@@ -82,81 +112,57 @@
             </div>
         </section>
         
-        <section class="admin-section">
-            <h3>Área de Administración</h3>
-            <div class="admin-controls">
-                <button id="show-login">Iniciar Sesión</button>
-                <button id="show-add-event" class="hidden">Añadir Evento</button>
-                <div id="login-form" class="modal hidden">
-                    <div class="modal-content">
-                        <span class="close">&times;</span>
-                        <h3>Iniciar Sesión</h3>
-                        <form id="login-form-element">
-                            <div class="form-group">
-                                <label for="username">Usuario:</label>
-                                <input type="text" id="username" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="password">Contraseña:</label>
-                                <input type="password" id="password" required>
-                            </div>
-                            <button type="submit">Ingresar</button>
-                        </form>
-                    </div>
+        <!-- Formulario para añadir eventos -->
+        <section id="add-event-section" class="add-event-section" style="display: none;">
+            <h3>Añadir Nuevo Evento</h3>
+            <form id="event-form">
+                <div class="form-group">
+                    <label for="event-name">Nombre del Evento:</label>
+                    <input type="text" id="event-name" required>
                 </div>
-                
-                <div id="add-event-form" class="modal hidden">
-                    <div class="modal-content">
-                        <span class="close">&times;</span>
-                        <h3>Añadir Nuevo Evento</h3>
-                        <form id="event-form-element">
-                            <div class="form-group">
-                                <label for="event-name">Nombre del Evento:</label>
-                                <input type="text" id="event-name" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="event-date">Fecha:</label>
-                                <input type="date" id="event-date" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="event-type-select">Tipo de Evento:</label>
-                                <select id="event-type-select" required>
-                                    <option value="">Selecciona un tipo</option>
-                                    <option value="gastronomico">Gastronómico</option>
-                                    <option value="deportivo">Deportivo</option>
-                                    <option value="cultural">Cultural</option>
-                                    <option value="vinos">Vinos</option>
-                                    <option value="aventura">Aventura</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="event-municipality">Municipio:</label>
-                                <select id="event-municipality" required>
-                                    <option value="">Selecciona un municipio</option>
-                                    <option value="meoqui">Meoqui</option>
-                                    <option value="delicias">Delicias</option>
-                                    <option value="saucillo">Saucillo</option>
-                                    <option value="rosales">Rosales</option>
-                                    <option value="julimes">Julimes</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="event-location">Lugar:</label>
-                                <input type="text" id="event-location" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="event-description">Descripción:</label>
-                                <textarea id="event-description" rows="4" required></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="event-image">URL de Imagen (opcional):</label>
-                                <input type="url" id="event-image" placeholder="https://ejemplo.com/imagen.jpg">
-                            </div>
-                            <button type="submit">Guardar Evento</button>
-                        </form>
-                    </div>
+                <div class="form-group">
+                    <label for="event-date">Fecha:</label>
+                    <input type="date" id="event-date" required>
                 </div>
-            </div>
+                <div class="form-group">
+                    <label for="event-type-select">Tipo de Evento:</label>
+                    <select id="event-type-select" required>
+                        <option value="">Selecciona un tipo</option>
+                        <option value="gastronomico">Gastronómico</option>
+                        <option value="deportivo">Deportivo</option>
+                        <option value="cultural">Cultural</option>
+                        <option value="vinos">Vinos</option>
+                        <option value="aventura">Aventura</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="event-municipality">Municipio:</label>
+                    <select id="event-municipality" required>
+                        <option value="">Selecciona un municipio</option>
+                        <option value="meoqui">Meoqui</option>
+                        <option value="delicias">Delicias</option>
+                        <option value="saucillo">Saucillo</option>
+                        <option value="rosales">Rosales</option>
+                        <option value="julimes">Julimes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="event-location">Lugar:</label>
+                    <input type="text" id="event-location" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-description">Descripción:</label>
+                    <textarea id="event-description" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="event-image">URL de Imagen (opcional):</label>
+                    <input type="url" id="event-image" placeholder="https://ejemplo.com/imagen.jpg">
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="primary-button">Guardar Evento</button>
+                    <button type="button" id="cancel-add-event" class="secondary-button">Cancelar</button>
+                </div>
+            </form>
         </section>
     </main>
 
