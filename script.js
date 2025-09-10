@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
         eventFormEl.dataset.editId = eventId;
         
         // Mostrar formulario
-        showAddEventBtn.click();
+        showModal(addEventFormModal);
     }
 
     // Función para eliminar evento
@@ -391,6 +391,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Función para mostrar modal (nueva función)
+    function showModal(modal) {
+        modal.style.display = 'block';
+        setTimeout(() => {
+            modal.classList.add('visible');
+        }, 10);
+    }
+
+    // Función para ocultar modal (nueva función)
+    function hideModal(modal) {
+        modal.classList.remove('visible');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
+
     // Navegación entre meses
     prevMonthBtn.addEventListener('click', function() {
         currentDate.setMonth(currentDate.getMonth() - 1);
@@ -413,13 +429,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Manejo de modales
     document.querySelectorAll('.close').forEach(closeBtn => {
         closeBtn.addEventListener('click', function() {
-            loginFormModal.classList.remove('visible');
-            addEventFormModal.classList.remove('visible');
+            const modal = this.closest('.modal');
+            hideModal(modal);
         });
     });
     
-    // Botón de login
+    // Botón de login (MODIFICADO)
     showLoginBtn.addEventListener('click', function() {
+        console.log("Botón de login clickeado"); // Añadido para depuración
+        
         if (isLoggedIn) {
             // Hacer logout
             isLoggedIn = false;
@@ -429,20 +447,22 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Ocultar botones de edición
             document.querySelectorAll('.event-actions').forEach(el => el.remove());
+            
+            alert('Has cerrado sesión correctamente.');
         } else {
-            // Mostrar formulario de login
-            loginFormModal.classList.add('visible');
+            // Mostrar formulario de login (MODIFICADO)
+            showModal(loginFormModal);
         }
     });
     
-    // Botón de añadir evento
+    // Botón de añadir evento (MODIFICADO)
     showAddEventBtn.addEventListener('click', function() {
         // Limpiar formulario
         eventFormEl.reset();
         delete eventFormEl.dataset.editId;
         
         // Mostrar formulario
-        addEventFormModal.classList.add('visible');
+        showModal(addEventFormModal);
     });
     
     // Formulario de login
@@ -459,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function() {
             currentUser = user;
             showLoginBtn.textContent = 'Cerrar Sesión';
             showAddEventBtn.classList.remove('hidden');
-            loginFormModal.classList.remove('visible');
+            hideModal(loginFormModal);
             
             // Actualizar vista para mostrar botones de edición
             if (selectedDate) {
@@ -494,7 +514,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         addOrUpdateEvent(formData);
-        addEventFormModal.classList.remove('visible');
+        hideModal(addEventFormModal);
     });
     
     // Inicializar calendario
@@ -513,4 +533,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Mostrar eventos del día actual
     showEventsForDate(todayStr);
+
+    // Cerrar modales al hacer clic fuera del contenido
+    window.addEventListener('click', function(event) {
+        if (event.target.classList.contains('modal')) {
+            hideModal(event.target);
+        }
+    });
 });
