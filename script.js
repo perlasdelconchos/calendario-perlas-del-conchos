@@ -1,32 +1,49 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // =======================================
     // Variables globales
+    // =======================================
     let currentDate = new Date();
     let selectedDate = null;
     let events = loadEvents();
-    let filteredEvents = [...events];
     let isLoggedIn = false;
     let currentUser = null;
 
+    // =======================================
     // Elementos del DOM
+    // =======================================
+    // Calendario
     const calendarEl = document.getElementById('calendar');
     const currentMonthEl = document.getElementById('current-month');
     const prevMonthBtn = document.getElementById('prev-month');
     const nextMonthBtn = document.getElementById('next-month');
+    
+    // Eventos
     const eventsListEl = document.getElementById('events-list');
     const noEventsEl = document.getElementById('no-events');
     const selectedDateEl = document.getElementById('selected-date');
     const upcomingEventsListEl = document.getElementById('upcoming-events-list');
+    
+    // Filtros
     const eventTypeFilter = document.getElementById('event-type');
     const municipalityFilter = document.getElementById('municipality');
     const applyFiltersBtn = document.getElementById('apply-filters');
-    const showLoginBtn = document.getElementById('show-login');
-    const showAddEventBtn = document.getElementById('show-add-event');
-    const loginFormModal = document.getElementById('login-form');
-    const addEventFormModal = document.getElementById('add-event-form');
-    const loginFormEl = document.getElementById('login-form-element');
-    const eventFormEl = document.getElementById('event-form-element');
+    
+    // Login y administración
+    const loginForm = document.getElementById('login-form');
+    const userLoggedInContainer = document.getElementById('user-logged-in');
+    const loginContainer = document.getElementById('login-container');
+    const loggedUserEl = document.getElementById('logged-user');
+    const loggedMunicipalityEl = document.getElementById('logged-municipality');
+    const logoutBtn = document.getElementById('logout-button');
+    const addEventButton = document.getElementById('add-event-button');
+    const addEventSection = document.getElementById('add-event-section');
+    const eventForm = document.getElementById('event-form');
+    const cancelAddEventBtn = document.getElementById('cancel-add-event');
 
-    // Usuarios y contraseñas (normalmente esto estaría en un servidor)
+    // =======================================
+    // Usuarios y datos de muestra
+    // =======================================
+    // Lista de usuarios permitidos
     const users = [
         { username: 'meoqui', password: 'meoqui2025', municipality: 'meoqui' },
         { username: 'delicias', password: 'delicias2025', municipality: 'delicias' },
@@ -36,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
         { username: 'admin', password: 'admin2025', municipality: 'todos' }
     ];
 
-    // Datos de muestra (solo para empezar)
+    // Eventos de muestra iniciales
     function getInitialEvents() {
         return [
             {
@@ -72,7 +89,10 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
     }
 
-    // Cargar eventos desde localStorage o usar datos de muestra
+    // =======================================
+    // Funciones de carga y guardado
+    // =======================================
+    // Cargar eventos desde localStorage
     function loadEvents() {
         const storedEvents = localStorage.getItem('calendarEvents');
         if (storedEvents) {
@@ -89,6 +109,19 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('calendarEvents', JSON.stringify(events));
     }
 
+    // Comprobar si hay una sesión guardada
+    function checkSavedSession() {
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            isLoggedIn = true;
+            updateLoginUI();
+        }
+    }
+
+    // =======================================
+    // Funciones del calendario
+    // =======================================
     // Renderizar calendario
     function renderCalendar() {
         // Limpiar días existentes (manteniendo los días de la semana)
@@ -178,6 +211,9 @@ document.addEventListener('DOMContentLoaded', function() {
         showUpcomingEvents();
     }
 
+    // =======================================
+    // Funciones de visualización de eventos
+    // =======================================
     // Mostrar eventos para una fecha específica
     function showEventsForDate(dateStr) {
         // Filtrar eventos por fecha y luego aplicar filtros adicionales
@@ -325,6 +361,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return eventCard;
     }
 
+    // =======================================
+    // Funciones de administración de eventos
+    // =======================================
     // Función para editar evento
     function editEvent(eventId) {
         const event = events.find(e => e.id === eventId);
@@ -340,10 +379,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('event-image').value = event.image || '';
         
         // Guardar ID del evento en edición
-        eventFormEl.dataset.editId = eventId;
+        eventForm.dataset.editId = eventId;
         
         // Mostrar formulario
-        showModal(addEventFormModal);
+        addEventSection.style.display = 'block';
+        
+        // Desplazarse al formulario
+        addEventSection.scrollIntoView({ behavior: 'smooth' });
     }
 
     // Función para eliminar evento
@@ -363,7 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para añadir o actualizar evento
     function addOrUpdateEvent(formData) {
-        const editId = parseInt(eventFormEl.dataset.editId);
+        const editId = parseInt(eventForm.dataset.editId);
         
         if (editId) {
             // Actualizar evento existente
@@ -391,22 +433,44 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Función para mostrar modal (nueva función)
-    function showModal(modal) {
-        modal.style.display = 'block';
-        setTimeout(() => {
-            modal.classList.add('visible');
-        }, 10);
+    // =======================================
+    // Funciones de UI de administración
+    // =======================================
+    // Actualizar UI después de login/logout
+    function updateLoginUI() {
+        if (isLoggedIn) {
+            loginContainer.style.display = 'none';
+            userLoggedInContainer.style.display = 'block';
+            loggedUserEl.textContent = currentUser.username;
+            loggedMunicipalityEl.textContent = currentUser.municipality === 'todos' ? 'Administrador' : currentUser.municipality;
+            
+            // Guardar sesión
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            // Actualizar vista para mostrar botones de edición
+            if (selectedDate) {
+                showEventsForDate(selectedDate);
+            }
+            showUpcomingEvents();
+        } else {
+            loginContainer.style.display = 'block';
+            userLoggedInContainer.style.display = 'none';
+            addEventSection.style.display = 'none';
+            
+            // Eliminar sesión guardada
+            localStorage.removeItem('currentUser');
+            
+            // Actualizar vista para ocultar botones de edición
+            if (selectedDate) {
+                showEventsForDate(selectedDate);
+            }
+            showUpcomingEvents();
+        }
     }
 
-    // Función para ocultar modal (nueva función)
-    function hideModal(modal) {
-        modal.classList.remove('visible');
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 300);
-    }
-
+    // =======================================
+    // Event Listeners
+    // =======================================
     // Navegación entre meses
     prevMonthBtn.addEventListener('click', function() {
         currentDate.setMonth(currentDate.getMonth() - 1);
@@ -426,47 +490,8 @@ document.addEventListener('DOMContentLoaded', function() {
         showUpcomingEvents();
     });
     
-    // Manejo de modales
-    document.querySelectorAll('.close').forEach(closeBtn => {
-        closeBtn.addEventListener('click', function() {
-            const modal = this.closest('.modal');
-            hideModal(modal);
-        });
-    });
-    
-    // Botón de login (MODIFICADO)
-    showLoginBtn.addEventListener('click', function() {
-        console.log("Botón de login clickeado"); // Añadido para depuración
-        
-        if (isLoggedIn) {
-            // Hacer logout
-            isLoggedIn = false;
-            currentUser = null;
-            showLoginBtn.textContent = 'Iniciar Sesión';
-            showAddEventBtn.classList.add('hidden');
-            
-            // Ocultar botones de edición
-            document.querySelectorAll('.event-actions').forEach(el => el.remove());
-            
-            alert('Has cerrado sesión correctamente.');
-        } else {
-            // Mostrar formulario de login (MODIFICADO)
-            showModal(loginFormModal);
-        }
-    });
-    
-    // Botón de añadir evento (MODIFICADO)
-    showAddEventBtn.addEventListener('click', function() {
-        // Limpiar formulario
-        eventFormEl.reset();
-        delete eventFormEl.dataset.editId;
-        
-        // Mostrar formulario
-        showModal(addEventFormModal);
-    });
-    
-    // Formulario de login
-    loginFormEl.addEventListener('submit', function(e) {
+    // Login
+    loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
         const username = document.getElementById('username').value;
@@ -476,25 +501,50 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (user) {
             isLoggedIn = true;
-            currentUser = user;
-            showLoginBtn.textContent = 'Cerrar Sesión';
-            showAddEventBtn.classList.remove('hidden');
-            hideModal(loginFormModal);
-            
-            // Actualizar vista para mostrar botones de edición
-            if (selectedDate) {
-                showEventsForDate(selectedDate);
-            }
-            showUpcomingEvents();
-            
+            currentUser = {
+                username: user.username,
+                municipality: user.municipality
+            };
+            updateLoginUI();
             alert(`¡Bienvenido, ${username}! Ya puedes gestionar los eventos de tu municipio.`);
         } else {
             alert('Usuario o contraseña incorrectos');
         }
     });
     
+    // Logout
+    logoutBtn.addEventListener('click', function() {
+        isLoggedIn = false;
+        currentUser = null;
+        updateLoginUI();
+        alert('Has cerrado sesión correctamente.');
+    });
+    
+    // Mostrar formulario de añadir evento
+    addEventButton.addEventListener('click', function() {
+        // Limpiar formulario
+        eventForm.reset();
+        delete eventForm.dataset.editId;
+        
+        // Si el usuario no es admin, preseleccionar su municipio
+        if (currentUser.municipality !== 'todos') {
+            document.getElementById('event-municipality').value = currentUser.municipality;
+        }
+        
+        // Mostrar formulario
+        addEventSection.style.display = 'block';
+        
+        // Desplazarse al formulario
+        addEventSection.scrollIntoView({ behavior: 'smooth' });
+    });
+    
+    // Cancelar añadir evento
+    cancelAddEventBtn.addEventListener('click', function() {
+        addEventSection.style.display = 'none';
+    });
+    
     // Formulario de evento
-    eventFormEl.addEventListener('submit', function(e) {
+    eventForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
         const formData = {
@@ -504,7 +554,7 @@ document.addEventListener('DOMContentLoaded', function() {
             municipality: document.getElementById('event-municipality').value,
             location: document.getElementById('event-location').value,
             description: document.getElementById('event-description').value,
-            image: document.getElementById('event-image').value
+            image: document.getElementById('event-image').value || null
         };
         
         // Validar que el usuario solo pueda agregar eventos de su municipio (excepto admin)
@@ -514,8 +564,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         addOrUpdateEvent(formData);
-        hideModal(addEventFormModal);
+        addEventSection.style.display = 'none';
+        alert('¡Evento guardado correctamente!');
     });
+    
+    // =======================================
+    // Inicialización
+    // =======================================
+    // Comprobar si hay una sesión guardada
+    checkSavedSession();
     
     // Inicializar calendario
     renderCalendar();
@@ -533,11 +590,4 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Mostrar eventos del día actual
     showEventsForDate(todayStr);
-
-    // Cerrar modales al hacer clic fuera del contenido
-    window.addEventListener('click', function(event) {
-        if (event.target.classList.contains('modal')) {
-            hideModal(event.target);
-        }
-    });
 });
